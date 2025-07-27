@@ -8,64 +8,35 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { PageHeader } from "@/components/page-header";
 import { Separator } from "@/components/ui/separator";
-import { HardHat, ShieldAlert, AlertTriangle, ShieldCheck, Building, Wrench, FireExtinguisher, BriefcaseMedical, CheckCircle2, Camera, Upload } from "lucide-react";
+import { HardHat, ShieldAlert, AlertTriangle, ShieldCheck, Building, Wrench, FireExtinguisher, BriefcaseMedical, CheckCircle2, Camera, Upload, Siren } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 import Confetti from "./confetti";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import Image from "next/image";
+import { glassWorkChecklist } from "./checklist-data";
 
 
-type ChecklistItem = {
-    text: string;
-    icon: JSX.Element;
-    photoRequired: boolean;
+const categoryIcons: Record<string, JSX.Element> = {
+    fall_protection: <ShieldAlert className="h-6 w-6" />,
+    glass_handling: <Building className="h-6 w-6" />,
+    equipment_safety: <Wrench className="h-6 w-6" />,
+    site_conditions: <AlertTriangle className="h-6 w-6" />,
 };
 
-type ChecklistCategory = {
-    priority: 'critical' | 'important' | 'standard';
-    items: ChecklistItem[];
-};
-
-const checklistData: Record<string, ChecklistCategory> = {
-  "Critical Safety (PPE)": {
-    priority: "critical",
-    items: [
-      { text: "Hard hats are worn by all personnel.", icon: <HardHat className="h-6 w-6 text-red-500" />, photoRequired: true },
-      { text: "Fall protection equipment used at heights over 6 feet.", icon: <ShieldAlert className="h-6 w-6 text-red-500" />, photoRequired: true },
-    ],
-  },
-  "Important (Work Area Safety)": {
-    priority: "important",
-    items: [
-      { text: "Walkways and access points are clear of debris.", icon: <Building className="h-6 w-6 text-yellow-500" />, photoRequired: false },
-      { text: "Proper signage is in place (e.g., caution, danger).", icon: <AlertTriangle className="h-6 w-6 text-yellow-500" />, photoRequired: false },
-      { text: "Fire extinguishers are accessible and charged.", icon: <FireExtinguisher className="h-6 w-6 text-yellow-500" />, photoRequired: false },
-      { text: "First aid kits are available and stocked.", icon: <BriefcaseMedical className="h-6 w-6 text-yellow-500" />, photoRequired: false },
-    ],
-  },
-  "Standard (Tools and Equipment)": {
-    priority: "standard",
-    items: [
-      { text: "Tools are in good condition and properly stored.", icon: <Wrench className="h-6 w-6 text-green-500" />, photoRequired: false },
-      { text: "Power tools have guards in place.", icon: <ShieldCheck className="h-6 w-6 text-green-500" />, photoRequired: false },
-      { text: "Ladders are secure and used correctly.", icon: <Building className="h-6 w-6 text-green-500" />, photoRequired: false },
-    ],
-  },
-};
 
 type ChecklistState = Record<string, { checked: boolean; photo?: string | null }>;
 
 export default function ChecklistsPage() {
-    const totalItems = Object.values(checklistData).reduce((acc, category) => acc + category.items.length, 0);
+    const totalItems = glassWorkChecklist.categories.reduce((acc, category) => acc + category.items.length, 0);
 
     const [checkedState, setCheckedState] = useState<ChecklistState>(() => {
         const initialState: ChecklistState = {};
-        Object.values(checklistData).forEach(category => {
-        category.items.forEach(item => {
-            initialState[item.text] = { checked: false, photo: null };
-        });
+        glassWorkChecklist.categories.forEach(category => {
+            category.items.forEach(item => {
+                initialState[item.id] = { checked: false, photo: null };
+            });
         });
         return initialState;
     });
@@ -120,10 +91,10 @@ export default function ChecklistsPage() {
         }
     }, [isCameraOpen, toast]);
 
-    const handleCheckChange = (itemText: string) => {
+    const handleCheckChange = (itemId: string) => {
         setCheckedState(prevState => ({
         ...prevState,
-        [itemText]: { ...prevState[itemText], checked: !prevState[itemText].checked },
+        [itemId]: { ...prevState[itemId], checked: !prevState[itemId].checked },
         }));
     };
 
@@ -156,24 +127,39 @@ export default function ChecklistsPage() {
 
     const getPriorityClass = (priority: string) => {
         switch (priority) {
-        case 'critical':
-            return 'border-l-4 border-red-500';
-        case 'important':
-            return 'border-l-4 border-yellow-500';
-        default:
-            return 'border-l-4 border-green-500';
+            case 'CRITICAL':
+                return 'border-l-4 border-red-500';
+            case 'HIGH':
+                return 'border-l-4 border-yellow-500';
+            case 'MEDIUM':
+                return 'border-l-4 border-blue-500';
+            default:
+                return 'border-l-4 border-green-500';
+        }
+    }
+    
+    const getPriorityIconColor = (priority: string) => {
+        switch (priority) {
+            case 'CRITICAL':
+                return 'text-red-500';
+            case 'HIGH':
+                return 'text-yellow-500';
+            case 'MEDIUM':
+                return 'text-blue-500';
+            default:
+                return 'text-green-500';
         }
     }
 
   return (
     <>
       {showConfetti && <Confetti />}
-      <PageHeader title="Daily Safety Checklist" description="Complete this before starting any work. Photo verification is required for critical items." />
+      <PageHeader title="Commercial Glass Installation Checklist" description={`${glassWorkChecklist.metadata.industry} - Risk Level: ${glassWorkChecklist.metadata.riskLevel}`} />
       
       <Dialog open={isCameraOpen} onOpenChange={setIsCameraOpen}>
         <DialogContent className="max-w-3xl">
             <DialogHeader>
-                <DialogTitle>Photo Verification: {currentItemForPhoto}</DialogTitle>
+                <DialogTitle>Photo Verification: {currentItemForPhoto ? glassWorkChecklist.categories.flatMap(c => c.items).find(i => i.id === currentItemForPhoto)?.text : ''}</DialogTitle>
             </DialogHeader>
             <div className="flex flex-col items-center gap-4">
                  <video ref={videoRef} className="w-full aspect-video rounded-md bg-muted" autoPlay muted playsInline />
@@ -203,29 +189,32 @@ export default function ChecklistsPage() {
                 </CardHeader>
                 <CardContent>
                 <form>
-                    {Object.entries(checklistData).map(([category, data]) => (
-                    <div key={category} className={`mb-8 p-6 rounded-lg bg-card ${getPriorityClass(data.priority)}`}>
-                        <h3 className="text-xl font-bold mb-4">{category}</h3>
+                    {glassWorkChecklist.categories.map((category) => (
+                    <div key={category.id} className={`mb-8 p-6 rounded-lg bg-card ${getPriorityClass(category.priority)}`}>
+                        <h3 className="text-xl font-bold mb-4 flex items-center gap-2">
+                            <span className={getPriorityIconColor(category.priority)}>{categoryIcons[category.id] || <Siren className="h-6 w-6"/>}</span>
+                            {category.name}
+                        </h3>
                         <Separator className="mb-6" />
                         <div className="space-y-6">
-                        {data.items.map((item, index) => {
-                            const state = checkedState[item.text];
+                        {category.items.map((item) => {
+                            const state = checkedState[item.id];
+                            const photoRequired = item.type.includes('photo');
                             return (
-                            <div key={index} className={`flex items-start space-x-4 p-4 rounded-md transition-all ease-in-out duration-300 ${!state.checked && data.priority === 'critical' ? 'animate-pulse bg-red-500/10' : ''}`}>
+                            <div key={item.id} className={`flex items-start space-x-4 p-4 rounded-md transition-all ease-in-out duration-300 ${!state.checked && category.priority === 'CRITICAL' ? 'animate-pulse bg-red-500/10' : ''}`}>
                                 <Checkbox
-                                    id={`${category}-${index}`}
+                                    id={item.id}
                                     checked={state.checked}
-                                    onCheckedChange={() => handleCheckChange(item.text)}
+                                    onCheckedChange={() => handleCheckChange(item.id)}
                                     className="h-8 w-8 mt-1"
                                 />
                                 <div className="flex-1 space-y-2">
-                                     <Label htmlFor={`${category}-${index}`} className="font-normal text-lg cursor-pointer flex-1 flex items-center">
-                                        {item.icon}
+                                     <Label htmlFor={item.id} className="font-normal text-lg cursor-pointer flex-1 flex items-center">
                                         <span className="ml-3">{item.text}</span>
                                     </Label>
-                                    {item.photoRequired && (
+                                    {photoRequired && (
                                         <div className="flex items-center gap-4 pl-9">
-                                            <Button type="button" variant="outline" size="sm" onClick={() => openCameraDialog(item.text)}>
+                                            <Button type="button" variant="outline" size="sm" onClick={() => openCameraDialog(item.id)}>
                                                 <Camera className="mr-2 h-4 w-4"/>
                                                 {state.photo ? 'Retake Photo' : 'Verify with Photo'}
                                             </Button>
@@ -302,5 +291,3 @@ export default function ChecklistsPage() {
     </>
   );
 }
-
-    
