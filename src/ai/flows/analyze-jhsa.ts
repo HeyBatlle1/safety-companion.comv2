@@ -1,3 +1,4 @@
+
 'use server';
 
 /**
@@ -60,17 +61,17 @@ const prompt = ai.definePrompt({
 
     Analyze the input data to generate a comprehensive safety assessment. You must return a JSON object with the following structure:
 
-    1.  `compliance_status`: Determine if the situation is 'compliant', 'non_compliant', or 'requires_attention'.
-    2.  `risk_level`: Assess the risk as 'low', 'moderate', 'high', or 'critical'.
-    3.  `specific_violations`: List any specific OSHA standards that are being violated. If none, return an empty array.
-    4.  `immediate_hazards`: Identify any immediate dangers to personnel. If none, return an empty array.
-    5.  `corrective_actions`: Provide a list of specific, actionable steps to mitigate hazards. For each action, include:
-        *   `action`: The required action.
-        *   `priority`: The priority ('immediate', 'high', 'medium', 'low').
-        *   `osha_standard`: The corresponding OSHA standard.
-        *   `implementation_timeframe`: The deadline for completion.
-    6.  `additional_recommendations`: Suggest further safety improvements or training.
-    7.  `insurance_risk_factors`: List factors that would be relevant for an insurance underwriter assessing this site.
+    1.  \`compliance_status\`: Determine if the situation is 'compliant', 'non_compliant', or 'requires_attention'.
+    2.  \`risk_level\`: Assess the risk as 'low', 'moderate', 'high', or 'critical'.
+    3.  \`specific_violations\`: List any specific OSHA standards that are being violated. If none, return an empty array.
+    4.  \`immediate_hazards\`: Identify any immediate dangers to personnel. If none, return an empty array.
+    5.  \`corrective_actions\`: Provide a list of specific, actionable steps to mitigate hazards. For each action, include:
+        *   \`action\`: The required action.
+        *   \`priority\`: The priority ('immediate', 'high', 'medium', 'low').
+        *   \`osha_standard\`: The corresponding OSHA standard.
+        *   \`implementation_timeframe\`: The deadline for completion.
+    6.  \`additional_recommendations\`: Suggest further safety improvements or training.
+    7.  \`insurance_risk_factors\`: List factors that would be relevant for an insurance underwriter assessing this site.
 
     Your analysis must be precise, referencing the provided standards and data. The safety of the workers depends on the accuracy of your assessment.`
 });

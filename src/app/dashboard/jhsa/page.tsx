@@ -12,6 +12,7 @@ import { Progress } from '@/components/ui/progress';
 import { PageHeader } from '@/components/page-header';
 import Image from 'next/image';
 import { analyzeJHSA, AnalyzeJHSAOutput, AnalyzeJHSAInput } from '@/ai/flows/analyze-jhsa';
+import { useToast } from '@/hooks/use-toast';
 
 
 // AI-Optimized JHSA Questions from our analysis
@@ -61,6 +62,7 @@ export default function IntelligentJHSASystem() {
   const [analysis, setAnalysis] = useState<AnalyzeJHSAOutput | null>(null);
   const [loading, setLoading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const { toast } = useToast();
 
   const handleInputChange = (questionId: string, fieldName: string, value: string) => {
     setAnalysis(null);
@@ -112,6 +114,11 @@ export default function IntelligentJHSASystem() {
       
     } catch (error) {
       console.error('Analysis error:', error);
+      toast({
+          variant: 'destructive',
+          title: 'Analysis Failed',
+          description: 'The AI analysis could not be completed. Please try again.',
+      });
     } finally {
       setLoading(false);
     }
@@ -385,4 +392,6 @@ export default function IntelligentJHSASystem() {
       </div>
     </>
   );
-};
+}
+
+    
