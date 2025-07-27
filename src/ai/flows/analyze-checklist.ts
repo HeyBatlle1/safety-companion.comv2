@@ -12,7 +12,7 @@
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
 
-export const AnalyzeChecklistInputSchema = z.object({
+const AnalyzeChecklistInputSchema = z.object({
   projectContext: z
     .string()
     .describe('Details about the project, like name, location, and type of work being performed (e.g., high-rise glass installation).'),
@@ -31,7 +31,7 @@ export const AnalyzeChecklistInputSchema = z.object({
 });
 export type AnalyzeChecklistInput = z.infer<typeof AnalyzeChecklistInputSchema>;
 
-export const AnalyzeChecklistOutputSchema = z.object({
+const AnalyzeChecklistOutputSchema = z.object({
   executiveSummary: z.string().describe('A high-level summary for management, focusing on overall risk, critical failures, and recommended immediate actions.'),
   technicalReport: z.string().describe('A detailed report for safety officers, including analysis of each failed item, potential OSHA violations, and specific mitigation advice.'),
   trendAnalysis: z.string().describe('Analysis for insurance documentation, identifying patterns, potential long-term risks, and comparison to safety benchmarks. Mention items that are frequently failed.'),
