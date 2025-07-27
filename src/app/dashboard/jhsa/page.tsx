@@ -89,7 +89,7 @@ export default function IntelligentJHSASystem() {
           ...prev,
           [questionId]: {
             file: file,
-            preview: e.target.result as string,
+            preview: e.target?.result as string,
           }
         }));
       };
@@ -440,5 +440,3 @@ export default function IntelligentJHSASystem() {
     </>
   );
 }
-
-    

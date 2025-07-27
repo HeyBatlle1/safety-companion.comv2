@@ -12,12 +12,14 @@ import {
   GanttChartSquare,
   ClipboardList,
   BadgeCheck,
+  FileText,
 } from "lucide-react";
 
 const menuItems = [
   { href: "/dashboard", icon: <LayoutDashboard />, text: "Dashboard" },
   { href: "/dashboard/projects", icon: <GanttChartSquare />, text: "Projects" },
   { href: "/dashboard/checklists", icon: <ClipboardList />, text: "Checklists" },
+  { href: "/dashboard/jhsa", icon: <FileText />, text: "JHSA" },
   { href: "/dashboard/profile", icon: <BadgeCheck />, text: "Certifications" },
 ];
 
