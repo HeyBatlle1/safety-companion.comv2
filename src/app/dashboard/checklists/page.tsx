@@ -241,16 +241,16 @@ export default function ChecklistsPage() {
                     </TabsList>
                     <div className="flex-grow overflow-y-auto p-1 mt-2">
                         <TabsContent value="summary">
-                           <Card className="prose dark:prose-invert max-w-none"><CardHeader><CardTitle>Executive Summary</CardTitle></CardHeader><CardContent><p>{analysisResult.executiveSummary}</p></CardContent></Card>
+                           <Card><CardHeader><CardTitle>Executive Summary</CardTitle></CardHeader><CardContent><div className="prose dark:prose-invert max-w-none">{analysisResult.executiveSummary}</div></CardContent></Card>
                         </TabsContent>
                         <TabsContent value="technical">
-                            <Card className="prose dark:prose-invert max-w-none"><CardHeader><CardTitle>Technical Report</CardTitle></CardHeader><CardContent><p>{analysisResult.technicalReport}</p></CardContent></Card>
+                            <Card><CardHeader><CardTitle>Technical Report</CardTitle></CardHeader><CardContent><div className="prose dark:prose-invert max-w-none">{analysisResult.technicalReport}</div></CardContent></Card>
                         </TabsContent>
                         <TabsContent value="trends">
-                             <Card className="prose dark:prose-invert max-w-none"><CardHeader><CardTitle>Trend & Insurance Analysis</CardTitle></CardHeader><CardContent><p>{analysisResult.trendAnalysis}</p></CardContent></Card>
+                             <Card><CardHeader><CardTitle>Trend & Insurance Analysis</CardTitle></CardHeader><CardContent><div className="prose dark:prose-invert max-w-none">{analysisResult.trendAnalysis}</div></CardContent></Card>
                         </TabsContent>
                         <TabsContent value="training">
-                            <Card className="prose dark:prose-invert max-w-none"><CardHeader><CardTitle>Crew Training Recommendations</CardTitle></CardHeader><CardContent><p>{analysisResult.trainingRecommendations}</p></CardContent></Card>
+                            <Card><CardHeader><CardTitle>Crew Training Recommendations</CardTitle></CardHeader><CardContent><div className="prose dark:prose-invert max-w-none">{analysisResult.trainingRecommendations}</div></CardContent></Card>
                         </TabsContent>
                     </div>
                 </Tabs>

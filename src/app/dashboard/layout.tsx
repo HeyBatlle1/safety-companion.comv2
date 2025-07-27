@@ -29,6 +29,7 @@ const menuItems = [
   { href: "/dashboard/projects", icon: <GanttChartSquare />, text: "Projects" },
   { href: "/dashboard/checklists", icon: <ClipboardList />, text: "Checklists" },
   { href: "/dashboard/reports", icon: <FileText />, text: "Reports" },
+  { href: "/dashboard/jhsa", icon: <FileText />, text: "JHSA" },
   { href: "/dashboard/profile", icon: <BadgeCheck />, text: "Certifications" },
 ];
 
