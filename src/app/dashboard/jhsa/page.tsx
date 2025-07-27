@@ -1,7 +1,8 @@
+
 "use client"
 
 import React, { useState, useRef } from 'react';
-import { Camera, Upload, AlertTriangle, CheckCircle, XCircle, Clock, FileText, Loader2 } from 'lucide-react';
+import { Camera, Upload, AlertTriangle, CheckCircle, XCircle, Clock, FileText, Loader2, Share2, FileDown, Mail, Link as LinkIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -13,7 +14,7 @@ import { PageHeader } from '@/components/page-header';
 import Image from 'next/image';
 import { analyzeJHSA, type AnalyzeJHSAOutput, type AnalyzeJHSAInput } from '@/ai/flows/analyze-jhsa';
 import { useToast } from '@/hooks/use-toast';
-
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 
 // AI-Optimized JHSA Questions from our analysis
 const jhsaQuestions = [
@@ -61,11 +62,14 @@ export default function IntelligentJHSASystem() {
   const [photos, setPhotos] = useState<Record<string, { file: File, preview: string }>>({});
   const [analysis, setAnalysis] = useState<AnalyzeJHSAOutput | null>(null);
   const [loading, setLoading] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const [isSaved, setIsSaved] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
 
   const handleInputChange = (questionId: string, fieldName: string, value: string) => {
     setAnalysis(null);
+    setIsSaved(false);
     setResponses(prev => ({
       ...prev,
       [questionId]: {
@@ -78,13 +82,14 @@ export default function IntelligentJHSASystem() {
   const handlePhotoUpload = (event: React.ChangeEvent<HTMLInputElement>, questionId: string) => {
     const file = event.target.files?.[0];
     if (file) {
+      setIsSaved(false);
       const reader = new FileReader();
       reader.onload = (e) => {
         setPhotos(prev => ({
           ...prev,
           [questionId]: {
             file: file,
-            preview: e.target?.result as string,
+            preview: e.target.result as string,
           }
         }));
       };
@@ -95,12 +100,23 @@ export default function IntelligentJHSASystem() {
   const analyzeWithGemini = async () => {
     setLoading(true);
     setAnalysis(null);
+    setIsSaved(false);
     
     try {
       const currentQ = jhsaQuestions[currentQuestion];
       const currentResponse = responses[currentQ.id] || {};
       const currentPhoto = photos[currentQ.id];
       
+      if(Object.keys(currentResponse).length === 0) {
+        toast({
+            variant: 'destructive',
+            title: 'Missing Information',
+            description: 'Please fill out the fields for the current step before analyzing.',
+        });
+        setLoading(false);
+        return;
+      }
+
       const analysisInput: AnalyzeJHSAInput = {
         regulatory_standards: currentQ.regulatory,
         environmental_factors: Object.entries(currentResponse).map(([key, value]) => `${key}: ${value}`).join(', '),
@@ -122,6 +138,18 @@ export default function IntelligentJHSASystem() {
     } finally {
       setLoading(false);
     }
+  };
+  
+  const handleSaveReport = async () => {
+    setIsSaving(true);
+    // Placeholder for Firestore saving logic
+    await new Promise(resolve => setTimeout(resolve, 1500));
+    setIsSaved(true);
+    setIsSaving(false);
+    toast({
+        title: "Report Saved",
+        description: "Your JHSA report has been successfully saved to the database.",
+    });
   };
 
   const getRiskColor = (level: string | undefined) => {
@@ -299,9 +327,23 @@ export default function IntelligentJHSASystem() {
             {analysis && (
             <Card>
                 <CardHeader>
-                    <div className="flex items-center">
-                        <FileText className="w-6 h-6 text-primary mr-2" />
-                        <CardTitle>AI Safety Analysis Results</CardTitle>
+                    <div className="flex items-center justify-between">
+                        <div className="flex items-center">
+                            <FileText className="w-6 h-6 text-primary mr-2" />
+                            <CardTitle>AI Safety Analysis</CardTitle>
+                        </div>
+                        <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                                <Button variant="ghost" size="icon" disabled={!isSaved}>
+                                    <Share2 className="w-4 h-4" />
+                                </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                                <DropdownMenuItem><FileDown className="mr-2 h-4 w-4" />Download PDF</DropdownMenuItem>
+                                <DropdownMenuItem><Mail className="mr-2 h-4 w-4" />Send via Email</DropdownMenuItem>
+                                <DropdownMenuItem><LinkIcon className="mr-2 h-4 w-4" />Copy Sharable Link</DropdownMenuItem>
+                            </DropdownMenuContent>
+                        </DropdownMenu>
                     </div>
                 </CardHeader>
                 <CardContent className="space-y-4">
@@ -386,6 +428,11 @@ export default function IntelligentJHSASystem() {
                         </div>
                     )}
                 </CardContent>
+                <CardContent>
+                    <Button onClick={handleSaveReport} disabled={isSaving || isSaved} className="w-full">
+                         {isSaving ? <><Loader2 className="animate-spin mr-2"/>Saving...</> : isSaved ? <><CheckCircle className="mr-2"/>Saved</> : 'Save Report'}
+                    </Button>
+                </CardContent>
             </Card>
             )}
         </div>
@@ -393,3 +440,5 @@ export default function IntelligentJHSASystem() {
     </>
   );
 }
+
+    
