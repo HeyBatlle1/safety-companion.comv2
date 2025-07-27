@@ -11,7 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Progress } from '@/components/ui/progress';
 import { PageHeader } from '@/components/page-header';
 import Image from 'next/image';
-import { analyzeJHSA, AnalyzeJHSAOutput, AnalyzeJHSAInput } from '@/ai/flows/analyze-jhsa';
+import { analyzeJHSA, type AnalyzeJHSAOutput, type AnalyzeJHSAInput } from '@/ai/flows/analyze-jhsa';
 import { useToast } from '@/hooks/use-toast';
 
 
@@ -199,7 +199,7 @@ export default function IntelligentJHSASystem() {
                                     <SelectValue placeholder="Select an option" />
                                 </SelectTrigger>
                                 <SelectContent>
-                                    {field.options.map((option, optIdx) => (
+                                    {field.options?.map((option, optIdx) => (
                                     <SelectItem key={optIdx} value={option}>{option}</SelectItem>
                                     ))}
                                 </SelectContent>
@@ -393,5 +393,3 @@ export default function IntelligentJHSASystem() {
     </>
   );
 }
-
-    

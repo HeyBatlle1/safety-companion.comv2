@@ -12,7 +12,7 @@
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
 
-export const AnalyzeJHSAInputSchema = z.object({
+const AnalyzeJHSAInputSchema = z.object({
   regulatory_standards: z.array(z.string()).describe('The applicable OSHA regulatory standards for the task.'),
   environmental_factors: z.string().describe('A description of the environmental factors at the job site.'),
   photo_descriptions: z.string().describe('A description of the photo provided for visual verification.'),
@@ -21,7 +21,7 @@ export const AnalyzeJHSAInputSchema = z.object({
 });
 export type AnalyzeJHSAInput = z.infer<typeof AnalyzeJHSAInputSchema>;
 
-export const AnalyzeJHSAOutputSchema = z.object({
+const AnalyzeJHSAOutputSchema = z.object({
   compliance_status: z.enum(['compliant', 'non_compliant', 'requires_attention']).describe('The overall compliance status.'),
   risk_level: z.enum(['low', 'moderate', 'high', 'critical']).describe('The assessed risk level.'),
   specific_violations: z.array(z.string()).describe('A list of specific OSHA violations identified.'),
