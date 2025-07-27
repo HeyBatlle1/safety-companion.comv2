@@ -1,5 +1,4 @@
 import Link from "next/link";
-import { usePathname } from "next/navigation";
 import {
   SidebarProvider,
   Sidebar,
@@ -13,48 +12,12 @@ import {
   SidebarInset,
 } from "@/components/ui/sidebar";
 import {
-  LayoutDashboard,
-  GanttChartSquare,
-  ClipboardList,
-  FileText,
-  BadgeCheck,
-  User,
   Settings,
+  User,
 } from "lucide-react";
 import { Logo } from "@/components/logo";
 import { UserNav } from "@/components/user-nav";
-
-const menuItems = [
-  { href: "/dashboard", icon: <LayoutDashboard />, text: "Dashboard" },
-  { href: "/dashboard/projects", icon: <GanttChartSquare />, text: "Projects" },
-  { href: "/dashboard/checklists", icon: <ClipboardList />, text: "Checklists" },
-  { href: "/dashboard/reports", icon: <FileText />, text: "Reports" },
-  { href: "/dashboard/jhsa", icon: <FileText />, text: "JHSA" },
-  { href: "/dashboard/profile", icon: <BadgeCheck />, text: "Certifications" },
-];
-
-function Nav({ children }: { children: React.ReactNode }) {
-  const pathname = usePathname();
-
-  return (
-    <SidebarMenu>
-      {menuItems.map((item) => (
-        <SidebarMenuItem key={item.href}>
-          <SidebarMenuButton
-            asChild
-            tooltip={item.text}
-            isActive={pathname === item.href || (item.href !== "/dashboard" && pathname.startsWith(item.href))}
-          >
-            <Link href={item.href}>
-              {item.icon}
-              <span>{item.text}</span>
-            </Link>
-          </SidebarMenuButton>
-        </SidebarMenuItem>
-      ))}
-    </SidebarMenu>
-  )
-}
+import { Nav } from "./nav";
 
 export default function DashboardLayout({
   children,
@@ -73,7 +36,7 @@ export default function DashboardLayout({
           </div>
         </SidebarHeader>
         <SidebarContent className="p-2">
-            <Nav>{null}</Nav>
+            <Nav />
         </SidebarContent>
         <SidebarFooter className="p-2">
            <SidebarMenu>
