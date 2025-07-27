@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import {
   SidebarProvider,
   Sidebar,
@@ -22,7 +23,6 @@ import {
 } from "lucide-react";
 import { Logo } from "@/components/logo";
 import { UserNav } from "@/components/user-nav";
-import { Button } from "@/components/ui/button";
 
 const menuItems = [
   { href: "/dashboard", icon: <LayoutDashboard />, text: "Dashboard" },
@@ -32,6 +32,29 @@ const menuItems = [
   { href: "/dashboard/jhsa", icon: <FileText />, text: "JHSA" },
   { href: "/dashboard/profile", icon: <BadgeCheck />, text: "Certifications" },
 ];
+
+function Nav({ children }: { children: React.ReactNode }) {
+  const pathname = usePathname();
+
+  return (
+    <SidebarMenu>
+      {menuItems.map((item) => (
+        <SidebarMenuItem key={item.href}>
+          <SidebarMenuButton
+            asChild
+            tooltip={item.text}
+            isActive={pathname === item.href || (item.href !== "/dashboard" && pathname.startsWith(item.href))}
+          >
+            <Link href={item.href}>
+              {item.icon}
+              <span>{item.text}</span>
+            </Link>
+          </SidebarMenuButton>
+        </SidebarMenuItem>
+      ))}
+    </SidebarMenu>
+  )
+}
 
 export default function DashboardLayout({
   children,
@@ -50,20 +73,7 @@ export default function DashboardLayout({
           </div>
         </SidebarHeader>
         <SidebarContent className="p-2">
-          <SidebarMenu>
-            {menuItems.map((item) => (
-              <SidebarMenuItem key={item.href}>
-                <SidebarMenuButton asChild tooltip={item.text}
-                 // This logic would be dynamic based on the current path
-                  isActive={item.href.startsWith('/dashboard') && item.href.length > 10 ? false : item.href === '/dashboard'}>
-                  <Link href={item.href}>
-                    {item.icon}
-                    <span>{item.text}</span>
-                  </Link>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-            ))}
-          </SidebarMenu>
+            <Nav>{null}</Nav>
         </SidebarContent>
         <SidebarFooter className="p-2">
            <SidebarMenu>

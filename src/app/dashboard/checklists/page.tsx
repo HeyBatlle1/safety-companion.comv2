@@ -125,8 +125,8 @@ export default function ChecklistsPage() {
         }
     };
     
-    const openCameraDialog = (itemText: string) => {
-        setCurrentItemForPhoto(itemText);
+    const openCameraDialog = (itemId: string) => {
+        setCurrentItemForPhoto(itemId);
         setIsCameraOpen(true);
     };
 
@@ -174,7 +174,7 @@ export default function ChecklistsPage() {
             case 'MEDIUM':
                 return 'border-l-4 border-blue-500';
             default:
-                return 'border-l-4 border-green-500';
+                return 'border-l-4 border-gray-500';
         }
     }
     
@@ -187,7 +187,7 @@ export default function ChecklistsPage() {
             case 'MEDIUM':
                 return 'text-blue-500';
             default:
-                return 'text-green-500';
+                return 'text-gray-500';
         }
     }
 
