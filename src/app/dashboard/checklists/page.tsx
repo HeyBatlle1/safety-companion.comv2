@@ -1,126 +1,249 @@
 
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { PageHeader } from "@/components/page-header";
 import { Separator } from "@/components/ui/separator";
-import { HardHat, ShieldAlert, AlertTriangle, ShieldCheck, Building, Wrench, FireExtinguisher, BriefcaseMedical, CheckCircle2, Siren } from "lucide-react";
+import { HardHat, ShieldAlert, AlertTriangle, ShieldCheck, Building, Wrench, FireExtinguisher, BriefcaseMedical, CheckCircle2, Camera, Upload } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 import Confetti from "./confetti";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { useToast } from "@/hooks/use-toast";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import Image from "next/image";
 
-const checklistData = {
+
+type ChecklistItem = {
+    text: string;
+    icon: JSX.Element;
+    photoRequired: boolean;
+};
+
+type ChecklistCategory = {
+    priority: 'critical' | 'important' | 'standard';
+    items: ChecklistItem[];
+};
+
+const checklistData: Record<string, ChecklistCategory> = {
   "Critical Safety (PPE)": {
     priority: "critical",
     items: [
-      { text: "Hard hats are worn by all personnel.", icon: <HardHat className="h-6 w-6 text-red-500" /> },
-      { text: "Fall protection equipment used at heights over 6 feet.", icon: <ShieldAlert className="h-6 w-6 text-red-500" /> },
+      { text: "Hard hats are worn by all personnel.", icon: <HardHat className="h-6 w-6 text-red-500" />, photoRequired: true },
+      { text: "Fall protection equipment used at heights over 6 feet.", icon: <ShieldAlert className="h-6 w-6 text-red-500" />, photoRequired: true },
     ],
   },
   "Important (Work Area Safety)": {
     priority: "important",
     items: [
-      { text: "Walkways and access points are clear of debris.", icon: <Building className="h-6 w-6 text-yellow-500" /> },
-      { text: "Proper signage is in place (e.g., caution, danger).", icon: <AlertTriangle className="h-6 w-6 text-yellow-500" /> },
-      { text: "Fire extinguishers are accessible and charged.", icon: <FireExtinguisher className="h-6 w-6 text-yellow-500" /> },
-      { text: "First aid kits are available and stocked.", icon: <BriefcaseMedical className="h-6 w-6 text-yellow-500" /> },
+      { text: "Walkways and access points are clear of debris.", icon: <Building className="h-6 w-6 text-yellow-500" />, photoRequired: false },
+      { text: "Proper signage is in place (e.g., caution, danger).", icon: <AlertTriangle className="h-6 w-6 text-yellow-500" />, photoRequired: false },
+      { text: "Fire extinguishers are accessible and charged.", icon: <FireExtinguisher className="h-6 w-6 text-yellow-500" />, photoRequired: false },
+      { text: "First aid kits are available and stocked.", icon: <BriefcaseMedical className="h-6 w-6 text-yellow-500" />, photoRequired: false },
     ],
   },
   "Standard (Tools and Equipment)": {
     priority: "standard",
     items: [
-      { text: "Tools are in good condition and properly stored.", icon: <Wrench className="h-6 w-6 text-green-500" /> },
-      { text: "Power tools have guards in place.", icon: <ShieldCheck className="h-6 w-6 text-green-500" /> },
-      { text: "Ladders are secure and used correctly.", icon: <Building className="h-6 w-6 text-green-500" /> },
+      { text: "Tools are in good condition and properly stored.", icon: <Wrench className="h-6 w-6 text-green-500" />, photoRequired: false },
+      { text: "Power tools have guards in place.", icon: <ShieldCheck className="h-6 w-6 text-green-500" />, photoRequired: false },
+      { text: "Ladders are secure and used correctly.", icon: <Building className="h-6 w-6 text-green-500" />, photoRequired: false },
     ],
   },
 };
 
-type ChecklistState = Record<string, boolean>;
+type ChecklistState = Record<string, { checked: boolean; photo?: string | null }>;
 
 export default function ChecklistsPage() {
-  const totalItems = Object.values(checklistData).reduce((acc, category) => acc + category.items.length, 0);
+    const totalItems = Object.values(checklistData).reduce((acc, category) => acc + category.items.length, 0);
 
-  const [checkedState, setCheckedState] = useState<ChecklistState>(() => {
-    const initialState: ChecklistState = {};
-    Object.values(checklistData).forEach(category => {
-      category.items.forEach(item => {
-        initialState[item.text] = false;
-      });
+    const [checkedState, setCheckedState] = useState<ChecklistState>(() => {
+        const initialState: ChecklistState = {};
+        Object.values(checklistData).forEach(category => {
+        category.items.forEach(item => {
+            initialState[item.text] = { checked: false, photo: null };
+        });
+        });
+        return initialState;
     });
-    return initialState;
-  });
-  
-  const [showConfetti, setShowConfetti] = useState(false);
-  const checkedCount = Object.values(checkedState).filter(Boolean).length;
-  const completionPercentage = totalItems > 0 ? (checkedCount / totalItems) * 100 : 0;
 
-  useEffect(() => {
-    if (completionPercentage === 100) {
-      setShowConfetti(true);
-      const timer = setTimeout(() => setShowConfetti(false), 5000); // Confetti for 5 seconds
-      return () => clearTimeout(timer);
+    const [showConfetti, setShowConfetti] = useState(false);
+    const [currentItemForPhoto, setCurrentItemForPhoto] = useState<string | null>(null);
+    const [isCameraOpen, setIsCameraOpen] = useState(false);
+    const [hasCameraPermission, setHasCameraPermission] = useState<boolean | null>(null);
+    
+    const videoRef = useRef<HTMLVideoElement>(null);
+    const canvasRef = useRef<HTMLCanvasElement>(null);
+    const { toast } = useToast();
+
+    const checkedCount = Object.values(checkedState).filter(item => item.checked).length;
+    const completionPercentage = totalItems > 0 ? (checkedCount / totalItems) * 100 : 0;
+
+    useEffect(() => {
+        if (completionPercentage === 100) {
+        setShowConfetti(true);
+        const timer = setTimeout(() => setShowConfetti(false), 5000); // Confetti for 5 seconds
+        return () => clearTimeout(timer);
+        }
+    }, [completionPercentage]);
+
+    useEffect(() => {
+        if (isCameraOpen) {
+            const getCameraPermission = async () => {
+                try {
+                    const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+                    setHasCameraPermission(true);
+                    if (videoRef.current) {
+                        videoRef.current.srcObject = stream;
+                    }
+                } catch (error) {
+                    console.error('Error accessing camera:', error);
+                    setHasCameraPermission(false);
+                    toast({
+                        variant: 'destructive',
+                        title: 'Camera Access Denied',
+                        description: 'Please enable camera permissions in your browser settings to use this feature.',
+                    });
+                    setIsCameraOpen(false);
+                }
+            };
+            getCameraPermission();
+        } else {
+             if (videoRef.current && videoRef.current.srcObject) {
+                const stream = videoRef.current.srcObject as MediaStream;
+                stream.getTracks().forEach(track => track.stop());
+                videoRef.current.srcObject = null;
+            }
+        }
+    }, [isCameraOpen, toast]);
+
+    const handleCheckChange = (itemText: string) => {
+        setCheckedState(prevState => ({
+        ...prevState,
+        [itemText]: { ...prevState[itemText], checked: !prevState[itemText].checked },
+        }));
+    };
+
+    const handleTakePhoto = () => {
+        if (videoRef.current && canvasRef.current) {
+            const video = videoRef.current;
+            const canvas = canvasRef.current;
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            const context = canvas.getContext('2d');
+            if(context){
+                context.drawImage(video, 0, 0, video.videoWidth, video.videoHeight);
+                const dataUrl = canvas.toDataURL('image/jpeg');
+                if (currentItemForPhoto) {
+                    setCheckedState(prevState => ({
+                        ...prevState,
+                        [currentItemForPhoto]: { ...prevState[currentItemForPhoto], photo: dataUrl, checked: true },
+                    }));
+                }
+                setIsCameraOpen(false);
+                setCurrentItemForPhoto(null);
+            }
+        }
+    };
+    
+    const openCameraDialog = (itemText: string) => {
+        setCurrentItemForPhoto(itemText);
+        setIsCameraOpen(true);
+    };
+
+    const getPriorityClass = (priority: string) => {
+        switch (priority) {
+        case 'critical':
+            return 'border-l-4 border-red-500';
+        case 'important':
+            return 'border-l-4 border-yellow-500';
+        default:
+            return 'border-l-4 border-green-500';
+        }
     }
-  }, [completionPercentage]);
-
-
-  const handleCheckChange = (itemText: string) => {
-    setCheckedState(prevState => ({
-      ...prevState,
-      [itemText]: !prevState[itemText],
-    }));
-  };
-
-  const getPriorityClass = (priority: string) => {
-    switch (priority) {
-      case 'critical':
-        return 'border-l-4 border-red-500';
-      case 'important':
-        return 'border-l-4 border-yellow-500';
-      default:
-        return 'border-l-4 border-green-500';
-    }
-  }
 
   return (
     <>
       {showConfetti && <Confetti />}
-      <PageHeader title="Daily Safety Checklist" description="Complete this before starting any work." />
+      <PageHeader title="Daily Safety Checklist" description="Complete this before starting any work. Photo verification is required for critical items." />
+      
+      <Dialog open={isCameraOpen} onOpenChange={setIsCameraOpen}>
+        <DialogContent className="max-w-3xl">
+            <DialogHeader>
+                <DialogTitle>Photo Verification: {currentItemForPhoto}</DialogTitle>
+            </DialogHeader>
+            <div className="flex flex-col items-center gap-4">
+                 <video ref={videoRef} className="w-full aspect-video rounded-md bg-muted" autoPlay muted playsInline />
+                 {hasCameraPermission === false && (
+                    <Alert variant="destructive">
+                        <AlertTitle>Camera Access Required</AlertTitle>
+                        <AlertDescription>
+                        Please allow camera access in your browser to use this feature.
+                        </AlertDescription>
+                    </Alert>
+                )}
+                 <canvas ref={canvasRef} className="hidden" />
+                 <Button onClick={handleTakePhoto} disabled={hasCameraPermission !== true} className="w-full h-12 text-lg">
+                    <Camera className="mr-2"/>
+                    Take Photo
+                 </Button>
+            </div>
+        </DialogContent>
+      </Dialog>
+      
       <div className="grid gap-8 lg:grid-cols-3">
         <div className="lg:col-span-2">
             <Card className="shadow-lg">
                 <CardHeader>
                 <CardTitle>Site: Alpha Tower | Date: {new Date().toLocaleDateString()}</CardTitle>
-                <CardDescription>Check each item to confirm it has been inspected and is compliant.</CardDescription>
+                <CardDescription>Check each item to confirm compliance. Critical items require photo proof.</CardDescription>
                 </CardHeader>
                 <CardContent>
                 <form>
                     {Object.entries(checklistData).map(([category, data]) => (
-                    <div key={category} className={`mb-8 p-4 rounded-lg bg-card ${getPriorityClass(data.priority)}`}>
+                    <div key={category} className={`mb-8 p-6 rounded-lg bg-card ${getPriorityClass(data.priority)}`}>
                         <h3 className="text-xl font-bold mb-4">{category}</h3>
                         <Separator className="mb-6" />
                         <div className="space-y-6">
-                        {data.items.map((item, index) => (
-                            <div key={index} className={`flex items-center space-x-4 p-3 rounded-md transition-all ease-in-out duration-300 ${!checkedState[item.text] && data.priority === 'critical' ? 'animate-pulse bg-red-500/10' : ''}`}>
-                                {item.icon}
+                        {data.items.map((item, index) => {
+                            const state = checkedState[item.text];
+                            return (
+                            <div key={index} className={`flex items-start space-x-4 p-4 rounded-md transition-all ease-in-out duration-300 ${!state.checked && data.priority === 'critical' ? 'animate-pulse bg-red-500/10' : ''}`}>
                                 <Checkbox
                                     id={`${category}-${index}`}
-                                    checked={checkedState[item.text]}
+                                    checked={state.checked}
                                     onCheckedChange={() => handleCheckChange(item.text)}
-                                    className="h-8 w-8"
+                                    className="h-8 w-8 mt-1"
                                 />
-                                <Label htmlFor={`${category}-${index}`} className="font-normal text-base cursor-pointer flex-1">
-                                    {item.text}
-                                </Label>
+                                <div className="flex-1 space-y-2">
+                                     <Label htmlFor={`${category}-${index}`} className="font-normal text-lg cursor-pointer flex-1 flex items-center">
+                                        {item.icon}
+                                        <span className="ml-3">{item.text}</span>
+                                    </Label>
+                                    {item.photoRequired && (
+                                        <div className="flex items-center gap-4 pl-9">
+                                            <Button type="button" variant="outline" size="sm" onClick={() => openCameraDialog(item.text)}>
+                                                <Camera className="mr-2 h-4 w-4"/>
+                                                {state.photo ? 'Retake Photo' : 'Verify with Photo'}
+                                            </Button>
+                                            {state.photo && (
+                                                <Image src={state.photo} alt="Verification photo" width={64} height={64} className="rounded-md aspect-square object-cover border" />
+                                            )}
+                                        </div>
+                                    )}
+                                </div>
                             </div>
-                        ))}
+                        )})}
                         </div>
                     </div>
                     ))}
-                    <Button type="submit" className="w-full mt-4 h-12 text-lg">Submit Checklist</Button>
+                    <Button type="submit" className="w-full mt-4 h-12 text-lg">
+                        <Upload className="mr-2" />
+                        Submit Checklist
+                    </Button>
                 </form>
                 </CardContent>
             </Card>
@@ -179,3 +302,5 @@ export default function ChecklistsPage() {
     </>
   );
 }
+
+    
