@@ -163,7 +163,7 @@ export default function Dashboard() {
           </CardContent>
            <CardHeader>
             <Button asChild size="sm" className="ml-auto gap-1">
-              <Link href="/dashboard/reports">
+              <Link href="/dashboard/projects">
                 View All
                 <ArrowUpRight className="h-4 w-4" />
               </Link>
