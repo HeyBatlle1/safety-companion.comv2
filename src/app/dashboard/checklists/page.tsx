@@ -16,7 +16,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import Image from "next/image";
 import { glassWorkChecklist } from "./checklist-data";
-import { analyzeChecklist, AnalyzeChecklistOutput } from "@/ai/flows/analyze-checklist";
+import { analyzeChecklist, type AnalyzeChecklistOutput } from "@/ai/flows/analyze-checklist";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 
@@ -240,17 +240,17 @@ export default function ChecklistsPage() {
                         <TabsTrigger value="training">Training</TabsTrigger>
                     </TabsList>
                     <div className="flex-grow overflow-y-auto p-1 mt-2">
-                        <TabsContent value="summary" className="prose dark:prose-invert max-w-none">
-                            <Card><CardHeader><CardTitle>Executive Summary</CardTitle></CardHeader><CardContent><p>{analysisResult.executiveSummary}</p></CardContent></Card>
+                        <TabsContent value="summary">
+                           <Card className="prose dark:prose-invert max-w-none"><CardHeader><CardTitle>Executive Summary</CardTitle></CardHeader><CardContent><p>{analysisResult.executiveSummary}</p></CardContent></Card>
                         </TabsContent>
-                        <TabsContent value="technical" className="prose dark:prose-invert max-w-none">
-                            <Card><CardHeader><CardTitle>Technical Report</CardTitle></CardHeader><CardContent><p>{analysisResult.technicalReport}</p></CardContent></Card>
+                        <TabsContent value="technical">
+                            <Card className="prose dark:prose-invert max-w-none"><CardHeader><CardTitle>Technical Report</CardTitle></CardHeader><CardContent><p>{analysisResult.technicalReport}</p></CardContent></Card>
                         </TabsContent>
-                        <TabsContent value="trends" className="prose dark:prose-invert max-w-none">
-                             <Card><CardHeader><CardTitle>Trend & Insurance Analysis</CardTitle></CardHeader><CardContent><p>{analysisResult.trendAnalysis}</p></CardContent></Card>
+                        <TabsContent value="trends">
+                             <Card className="prose dark:prose-invert max-w-none"><CardHeader><CardTitle>Trend & Insurance Analysis</CardTitle></CardHeader><CardContent><p>{analysisResult.trendAnalysis}</p></CardContent></Card>
                         </TabsContent>
-                        <TabsContent value="training" className="prose dark:prose-invert max-w-none">
-                            <Card><CardHeader><CardTitle>Crew Training Recommendations</CardTitle></CardHeader><CardContent><p>{analysisResult.trainingRecommendations}</p></CardContent></Card>
+                        <TabsContent value="training">
+                            <Card className="prose dark:prose-invert max-w-none"><CardHeader><CardTitle>Crew Training Recommendations</CardTitle></CardHeader><CardContent><p>{analysisResult.trainingRecommendations}</p></CardContent></Card>
                         </TabsContent>
                     </div>
                 </Tabs>
