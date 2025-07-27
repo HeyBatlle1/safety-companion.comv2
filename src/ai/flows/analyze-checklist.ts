@@ -58,8 +58,8 @@ Analyze the provided checklist responses in the context of the project. Go beyon
 Project Context:
 {{{projectContext}}}
 
-Checklist Responses (JSON):
-{{{json stringify=checklistResponses}}}
+Checklist Responses (as a JSON object):
+{{{checklistResponses}}}
 
 Based on your analysis, generate the following four distinct reports:
 
