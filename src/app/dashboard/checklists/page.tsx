@@ -8,7 +8,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { PageHeader } from "@/components/page-header";
 import { Separator } from "@/components/ui/separator";
-import { HardHat, ShieldAlert, AlertTriangle, ShieldCheck, Construction, Tool, FireExtinguisher, FirstAidKit, CheckCircle2, Siren } from "lucide-react";
+import { HardHat, ShieldAlert, AlertTriangle, ShieldCheck, Building, Wrench, FireExtinguisher, BriefcaseMedical, CheckCircle2, Siren } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 import Confetti from "./confetti";
 
@@ -23,18 +23,18 @@ const checklistData = {
   "Important (Work Area Safety)": {
     priority: "important",
     items: [
-      { text: "Walkways and access points are clear of debris.", icon: <Construction className="h-6 w-6 text-yellow-500" /> },
+      { text: "Walkways and access points are clear of debris.", icon: <Building className="h-6 w-6 text-yellow-500" /> },
       { text: "Proper signage is in place (e.g., caution, danger).", icon: <AlertTriangle className="h-6 w-6 text-yellow-500" /> },
       { text: "Fire extinguishers are accessible and charged.", icon: <FireExtinguisher className="h-6 w-6 text-yellow-500" /> },
-      { text: "First aid kits are available and stocked.", icon: <FirstAidKit className="h-6 w-6 text-yellow-500" /> },
+      { text: "First aid kits are available and stocked.", icon: <BriefcaseMedical className="h-6 w-6 text-yellow-500" /> },
     ],
   },
   "Standard (Tools and Equipment)": {
     priority: "standard",
     items: [
-      { text: "Tools are in good condition and properly stored.", icon: <Tool className="h-6 w-6 text-green-500" /> },
+      { text: "Tools are in good condition and properly stored.", icon: <Wrench className="h-6 w-6 text-green-500" /> },
       { text: "Power tools have guards in place.", icon: <ShieldCheck className="h-6 w-6 text-green-500" /> },
-      { text: "Ladders are secure and used correctly.", icon: <Construction className="h-6 w-6 text-green-500" /> },
+      { text: "Ladders are secure and used correctly.", icon: <Building className="h-6 w-6 text-green-500" /> },
     ],
   },
 };
