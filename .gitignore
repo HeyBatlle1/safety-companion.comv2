@@ -1,0 +1,57 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+venv/
+env/
+ENV/
+*.egg-info/
+dist/
+build/
+
+# FastAPI & Database
+.env
+.env.local
+*.db
+*.sqlite
+*.sqlite3
+
+# Node/Frontend
+node_modules/
+.npm
+dist/
+build/
+.next/
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+
+# Logs
+*.log
+logs/
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+
+# Railway
+.railway/
+
+# OS
+Thumbs.db
+.Spotlight-V100
+.Trashes
+
+# Secrets
+*.pem
+*.key
+.env*
+!.env.example
