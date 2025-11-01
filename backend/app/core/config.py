@@ -11,9 +11,7 @@ class Settings(BaseSettings):
     # Database - Neon (consolidated)
     database_url: str
 
-    # Supabase Auth (for JWT verification)
-    supabase_url: str
-    supabase_jwt_secret: str
+    # Supabase removed - V2 uses SQLAlchemy only
 
     # External APIs (REQUIRED)
     gemini_api_key: str

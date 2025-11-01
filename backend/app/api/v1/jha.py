@@ -81,6 +81,19 @@ async def analyze_checklist(
         )
 
 
+# Legacy compatibility route for old frontend
+@router.post("/jha-update")
+async def jha_update_legacy(
+    request: JHAAnalysisRequest,
+    jha_service: JHAService = Depends(get_jha_service)
+):
+    """
+    Legacy endpoint for old frontend compatibility.
+    Maps to the same analyze_checklist function.
+    """
+    return await analyze_checklist(request, jha_service)
+
+
 @router.post("/live-update", response_model=JHALiveUpdateResponse)
 async def live_update(
     request: JHALiveUpdateRequest,

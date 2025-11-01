@@ -1,7 +1,10 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from app.core.config import get_settings
-from app.api.v1.jha import router as jha_router
+from app.api.v1.jha import router as jha_router, analyze_checklist
+from app.schemas.jha import JHAAnalysisRequest
+from app.core.deps import get_jha_service
+from app.services.jha_service import JHAService
 
 settings = get_settings()
 
@@ -23,6 +26,9 @@ app.add_middleware(
 
 # Include API routes
 app.include_router(jha_router, prefix="/api/v1")
+
+# Legacy compatibility routes for old frontend
+app.include_router(jha_router, prefix="/api", tags=["legacy"])
 
 @app.get("/")
 async def root():
@@ -52,3 +58,11 @@ async def health_check():
             "database": "ready"
         }
     }
+
+@app.post("/api/jha-update")
+async def legacy_jha_update(
+    request: JHAAnalysisRequest,
+    jha_service: JHAService = Depends(get_jha_service)
+):
+    """Legacy endpoint for old frontend - redirects to new analyze"""
+    return await analyze_checklist(request, jha_service)

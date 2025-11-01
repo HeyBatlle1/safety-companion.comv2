@@ -4,10 +4,14 @@ from app.core.config import get_settings
 
 settings = get_settings()
 
-# Convert postgres:// to postgresql+asyncpg:// and remove sslmode for asyncpg
-DATABASE_URL = settings.database_url.replace("postgresql://", "postgresql+asyncpg://")
-if "sslmode=" in DATABASE_URL:
-    DATABASE_URL = DATABASE_URL.split("?sslmode=")[0]
+# Convert URLs for async drivers
+if settings.database_url.startswith("sqlite://"):
+    DATABASE_URL = settings.database_url.replace("sqlite://", "sqlite+aiosqlite://")
+else:
+    # Convert postgres:// to postgresql+asyncpg:// and remove sslmode for asyncpg
+    DATABASE_URL = settings.database_url.replace("postgresql://", "postgresql+asyncpg://")
+    if "sslmode=" in DATABASE_URL:
+        DATABASE_URL = DATABASE_URL.split("?sslmode=")[0]
 
 # Create async engine with SQLite-compatible settings
 engine_kwargs = {
