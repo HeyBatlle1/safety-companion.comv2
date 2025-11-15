@@ -1,7 +1,8 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { FileText, Send } from 'lucide-react';
-import { getMSDSResponse } from '../services/msdsChat';
+// TODO: Replace with V2 backend MSDS endpoint
+// import { getMSDSResponse } from '../services/msdsChat';
 
 interface Message {
   id: string;

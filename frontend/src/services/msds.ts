@@ -1,4 +1,5 @@
-import { getChatResponse } from './gemini';
+// TODO: Replace with V2 backend chat endpoint
+// import { getChatResponse } from './gemini';
 import { searchCompounds, PubChemCompound } from './pubchem';
 
 export const enhanceCompoundData = async (compound: PubChemCompound): Promise<PubChemCompound> => {
@@ -11,7 +12,11 @@ export const enhanceCompoundData = async (compound: PubChemCompound): Promise<Pu
     5. Disposal methods
     Format the response in clear, concise bullet points.`;
 
-    const aiResponse = await getChatResponse(prompt);
+    // TODO: Replace with V2 backend chat endpoint
+    // const aiResponse = await getChatResponse(prompt);
+
+    // Temporary mock response until V2 backend is implemented
+    const aiResponse = "Enhanced safety data will be available in V2 with secure backend integration.";
     
     // Parse AI response and merge with PubChem data
     return {

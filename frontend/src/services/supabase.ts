@@ -1,58 +1,20 @@
-import { createClient, SupabaseClient } from '@supabase/supabase-js';
-
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || '';
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || '';
-
-// Singleton pattern: Store client in window to survive HMR
-declare global {
-  interface Window {
-    __supabaseClient?: SupabaseClient;
-  }
-}
-
-let supabase: SupabaseClient;
-
-if (typeof window !== 'undefined' && window.__supabaseClient) {
-  supabase = window.__supabaseClient;
-} else {
-  supabase = createClient(supabaseUrl, supabaseAnonKey, {
-    auth: {
-      persistSession: true,
-      autoRefreshToken: true,
-      detectSessionInUrl: true,
-      storage: typeof window !== 'undefined' ? window.localStorage : undefined,
-      storageKey: 'safety-companion-auth',
-      flowType: 'pkce'
-    }
-  });
-  
-  if (typeof window !== 'undefined') {
-    window.__supabaseClient = supabase;
-  }
-}
-
-// Helper functions
-export const getCurrentUser = async () => {
-  const { data: { user }, error } = await supabase.auth.getUser();
-  return { user, error };
+// Mock Supabase client for testing without Supabase
+export const supabase = {
+  auth: {
+    getSession: async () => ({ data: { session: null }, error: null }),
+    signIn: async () => ({ data: null, error: null }),
+    signOut: async () => ({ error: null })
+  },
+  from: () => ({
+    select: () => ({ data: [], error: null }),
+    insert: () => ({ data: null, error: null }),
+    update: () => ({ data: null, error: null }),
+    delete: () => ({ data: null, error: null })
+  })
 };
 
-export const getSupabaseStatus = async () => {
-  try {
-    const { error } = await supabase.from('user_profiles').select('count').limit(1);
-    return {
-      connected: !error,
-      error: error?.message || null,
-      timestamp: new Date().toISOString()
-    };
-  } catch {
-    return {
-      connected: false,
-      error: 'Connection failed',
-      timestamp: new Date().toISOString()
-    };
-  }
-};
+// Mock functions for backward compatibility
+export const getCurrentUser = async () => null;
+export const getSupabaseStatus = async () => ({ connected: false, message: 'Mock mode' });
 
 export default supabase;
-export { supabase };

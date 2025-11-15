@@ -4,7 +4,8 @@ import { Send, Paperclip, Image, Mic, X, Loader, Camera, ChevronDown, ChevronUp,
 import ChatMessage from '../components/chat/ChatMessage';
 import BackButton from '../components/navigation/BackButton';
 import { Message } from '../types/chat';
-import { getChatResponse } from '../services/gemini';
+// TODO: Replace with V2 backend chat endpoint
+// import { getChatResponse } from '../services/gemini';
 import { saveMessage, getChatHistory, clearChatHistory } from '../services/messageService';
 import { saveAnalysisToHistory } from '../services/history';
 import { showToast } from '../components/common/ToastContainer';
@@ -135,8 +136,11 @@ const Chat = () => {
     try {
       let response: string;
 
-      // Direct query to Gemini Pro with full access
-      response = await getChatResponse(text);
+      // TODO: Replace with V2 backend chat endpoint
+      // response = await getChatResponse(text);
+
+      // Temporary mock response until V2 backend is implemented
+      response = "Chat functionality will be available in V2 with secure backend integration. Your message: " + text;
       
       const botMessage: Message = {
         id: (Date.now() + 1).toString(),

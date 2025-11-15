@@ -7,7 +7,7 @@ from app.agents.base import ModelCapability
 class GoogleGeminiAdapter(BaseModelAdapter):
     """Adapter for Google Gemini models"""
 
-    def __init__(self, api_key: str, model: str = "gemini-2.5-flash"):
+    def __init__(self, api_key: str, model: str = "gemini-2.0-flash"):
         genai.configure(api_key=api_key)
         self.model = genai.GenerativeModel(model)
         self.model_name = model
@@ -68,7 +68,7 @@ class GoogleGeminiAdapter(BaseModelAdapter):
             raise Exception(f"Gemini API error: {str(e)}") from e
 
     def get_capabilities(self) -> list[ModelCapability]:
-        """Gemini 2.5 Flash is fast + good at structured output"""
+        """Gemini 2.0 Flash is fast + good at structured output"""
         return [
             ModelCapability.FAST_REASONING,
             ModelCapability.STRUCTURED_OUTPUT,
@@ -76,7 +76,7 @@ class GoogleGeminiAdapter(BaseModelAdapter):
         ]
 
     def get_cost_per_1k_tokens(self) -> Dict[str, float]:
-        """Gemini 2.5 Flash pricing"""
+        """Gemini 2.0 Flash pricing"""
         return {
             "input": 0.00015,   # $0.15 per 1M tokens
             "output": 0.0006    # $0.60 per 1M tokens

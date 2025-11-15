@@ -13,8 +13,9 @@ class Settings(BaseSettings):
 
     # Supabase removed - V2 uses SQLAlchemy only
 
-    # External APIs (REQUIRED)
-    gemini_api_key: str
+    # External APIs (AT LEAST ONE REQUIRED)
+    gemini_api_key: str | None = None  # Direct Gemini (fallback)
+    openrouter_api_key: str | None = None  # OpenRouter (preferred)
 
     # External APIs (OPTIONAL)
     google_maps_api_key: str | None = None

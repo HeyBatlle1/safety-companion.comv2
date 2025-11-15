@@ -18,10 +18,12 @@ import ChecklistView from '@/pages/ChecklistView';
 import Profiles from '@/pages/Profiles';
 import { InsuranceAnalytics } from '@/pages/InsuranceAnalytics';
 import PatternAnalysisPage from '@/pages/PatternAnalysis';
+import AgentSettingsPage from '@/pages/AgentSettings';
 import StructuredQuestionsDemo from '@/pages/StructuredQuestionsDemo';
 import Reports from '@/pages/Reports';
 import ReportView from '@/pages/ReportView';
 import ToastContainer from '@/components/common/ToastContainer';
+import { ExecutiveSummaryTest } from '@/components/test/ExecutiveSummaryTest';
 
 function App() {
   const { loading, user } = useAuth();
@@ -146,6 +148,11 @@ function App() {
             </AppLayout>
           </PrivateRoute>
         } />
+        <Route path="/admin/agent-settings" element={
+          <PrivateRoute>
+            <AgentSettingsPage />
+          </PrivateRoute>
+        } />
         <Route path="/structured-questions-demo" element={
           <PrivateRoute>
             <StructuredQuestionsDemo />
@@ -162,6 +169,13 @@ function App() {
           <PrivateRoute>
             <AppLayout>
               <ReportView />
+            </AppLayout>
+          </PrivateRoute>
+        } />
+        <Route path="/test-executive-summary" element={
+          <PrivateRoute>
+            <AppLayout>
+              <ExecutiveSummaryTest />
             </AppLayout>
           </PrivateRoute>
         } />

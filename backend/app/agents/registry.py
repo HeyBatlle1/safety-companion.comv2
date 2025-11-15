@@ -3,6 +3,14 @@ from app.agents.base import AgentTask, ModelCapability, ModelProvider
 from app.agents.adapters.base_adapter import BaseModelAdapter
 from app.agents.adapters.google import GoogleGeminiAdapter
 
+# Try to import OpenRouter
+try:
+    from app.agents.adapters.openrouter import OpenRouterAdapter
+    OPENROUTER_AVAILABLE = True
+except (ImportError, RuntimeError):
+    OPENROUTER_AVAILABLE = False
+    OpenRouterAdapter = None
+
 # Try to import Anthropic, but don't fail if missing
 try:
     from app.agents.adapters.anthropic import AnthropicAdapter
@@ -20,13 +28,31 @@ class AgentRegistry:
     def __init__(self, config: dict):
         self.adapters: Dict[str, BaseModelAdapter] = {}
 
-        # Initialize Gemini (required)
+        # Initialize OpenRouter (preferred - free tier available)
+        if OPENROUTER_AVAILABLE and config.get("openrouter_api_key"):
+            # Free tier Gemini 2.0 Flash via OpenRouter
+            self.adapters["openrouter-gemini-free"] = OpenRouterAdapter(
+                api_key=config["openrouter_api_key"],
+                model="google/gemini-2.0-flash-exp:free"
+            )
+            # Paid tier models via OpenRouter (if needed)
+            self.adapters["openrouter-claude-sonnet"] = OpenRouterAdapter(
+                api_key=config["openrouter_api_key"],
+                model="anthropic/claude-3.5-sonnet"
+            )
+            self.adapters["openrouter-gpt4o"] = OpenRouterAdapter(
+                api_key=config["openrouter_api_key"],
+                model="openai/gpt-4o"
+            )
+            print("✅ OpenRouter initialized with free Gemini 2.0 Flash")
+
+        # Initialize Direct Gemini (fallback if OpenRouter not available)
         if config.get("gemini_api_key"):
-            self.adapters["gemini-2.5-flash"] = GoogleGeminiAdapter(
+            self.adapters["gemini-2.0-flash"] = GoogleGeminiAdapter(
                 api_key=config["gemini_api_key"]
             )
-        else:
-            raise ValueError("gemini_api_key is required in config")
+            if not OPENROUTER_AVAILABLE or not config.get("openrouter_api_key"):
+                print("⚠️ Using direct Gemini API (quota limitations may apply)")
 
         # Initialize Anthropic (optional - only if library installed AND key provided)
         if ANTHROPIC_AVAILABLE and config.get("anthropic_api_key"):
@@ -38,6 +64,10 @@ class AgentRegistry:
                 api_key=config["anthropic_api_key"],
                 model="claude-sonnet-4-20250514"
             )
+
+        # Ensure we have at least one adapter
+        if not self.adapters:
+            raise ValueError("No valid API keys provided. Need at least one of: openrouter_api_key, gemini_api_key")
 
     def route_task(self, task: AgentTask) -> BaseModelAdapter:
         """
@@ -82,7 +112,7 @@ class AgentRegistry:
     def _get_preferred_adapter(self, provider: ModelProvider) -> Optional[BaseModelAdapter]:
         """Get adapter for preferred provider (if available)"""
         if provider == ModelProvider.GOOGLE:
-            return self.adapters.get("gemini-2.5-flash")
+            return self.adapters.get("gemini-2.0-flash")
         elif provider == ModelProvider.ANTHROPIC:
             # Try Sonnet first (faster), then Opus
             return self.adapters.get("claude-sonnet-4.5") or self.adapters.get("claude-opus-4")

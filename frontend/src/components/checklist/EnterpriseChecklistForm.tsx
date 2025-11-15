@@ -37,8 +37,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { showToast } from '@/components/common/ToastContainer';
 import { safetyCompanionAPI } from '@/services/safetyCompanionAPI';
-import { MultiModalAnalysisService } from '@/services/multiModalAnalysis';
-import { modernGeminiVision } from '@/services/modernGeminiVision';
+// TODO: Replace with V2 backend vision analysis
+// import { modernGeminiVision } from '@/services/modernGeminiVision';
 import BackButton from '@/components/navigation/BackButton';
 import { trackChecklistInteraction, trackClientPerformance } from '@/utils/silentTracking';
 import { checklistData } from './checklistData';

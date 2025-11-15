@@ -20,6 +20,7 @@ from app.agents.profiles.synthesis_agent import SynthesisAgent
 from app.models.analysis import AnalysisHistory
 from app.models.jha_updates import JHAUpdate
 from app.schemas.jha import JHAAnalysisRequest, JHAAnalysisResponse
+from app.services.agent_config_service import AgentConfigService
 
 
 class JHAOrchestrator:
@@ -39,6 +40,9 @@ class JHAOrchestrator:
         self.risk_assessor = RiskAssessorAgent(agent_registry)
         self.swiss_cheese = SwissCheeseAnalyzerAgent(agent_registry)
         self.synthesizer = SynthesisAgent(agent_registry)
+
+        # Initialize agent config service
+        self.config_service = AgentConfigService(db)
 
     async def execute_full_analysis(
         self,
@@ -67,6 +71,10 @@ class JHAOrchestrator:
         # await self.db.refresh(analysis_record)
 
         try:
+            # Load agent configurations from database
+            await self.config_service.ensure_default_configs_exist()
+            agent_configs = await self.config_service.get_orchestrator_config()
+
             # Prepare base task data
             base_task_data = {
                 "checklist": request.dict(),
@@ -81,12 +89,13 @@ class JHAOrchestrator:
                 "current_time": datetime.utcnow().isoformat()
             }
 
-            # AGENT 1: Data Validation (Temperature 0.3)
-            print("📋 Agent 1: Validating data quality...")
+            # AGENT 1: Data Validation (Temperature from DB)
+            agent1_config = agent_configs.get("agent1_validation", {"temperature": 0.3})
+            print(f"📋 Agent 1: Validating data quality... (T={agent1_config['temperature']})")
             agent1_task = AgentTask(
                 task_type="jha_validation",
                 input_data=base_task_data,
-                temperature=0.3,
+                temperature=agent1_config["temperature"],
                 required_capabilities=[ModelCapability.FAST_REASONING, ModelCapability.STRUCTURED_OUTPUT]
             )
 
@@ -97,15 +106,16 @@ class JHAOrchestrator:
             validation_data = validation_result.output_data
             print(f"✓ Data quality: {validation_data.get('validation', {}).get('dataQuality', 'UNKNOWN')}")
 
-            # AGENT 2: Risk Assessment (Temperature 0.7)
-            print("⚠️ Agent 2: Assessing risks with OSHA data...")
+            # AGENT 2: Risk Assessment (Temperature from DB)
+            agent2_config = agent_configs.get("agent2_risk", {"temperature": 0.7})
+            print(f"⚠️ Agent 2: Assessing risks with OSHA data... (T={agent2_config['temperature']})")
             agent2_task_data = base_task_data.copy()
             agent2_task_data["validation"] = validation_data
 
             agent2_task = AgentTask(
                 task_type="risk_assessment",
                 input_data=agent2_task_data,
-                temperature=0.7,
+                temperature=agent2_config["temperature"],
                 required_capabilities=[ModelCapability.FAST_REASONING, ModelCapability.STRUCTURED_OUTPUT]
             )
 
@@ -117,8 +127,9 @@ class JHAOrchestrator:
             hazard_count = len(risk_data.get("hazards", []))
             print(f"✓ Identified {hazard_count} hazards")
 
-            # AGENT 3: Swiss Cheese Incident Prediction (Temperature 1.0)
-            print("🔮 Agent 3: Predicting incident scenarios...")
+            # AGENT 3: Swiss Cheese Incident Prediction (Temperature from DB)
+            agent3_config = agent_configs.get("agent3_prediction", {"temperature": 1.0})
+            print(f"🔮 Agent 3: Predicting incident scenarios... (T={agent3_config['temperature']})")
             agent3_task_data = base_task_data.copy()
             agent3_task_data["validation"] = validation_data
             agent3_task_data["risk_assessment"] = risk_data
@@ -126,7 +137,7 @@ class JHAOrchestrator:
             agent3_task = AgentTask(
                 task_type="swiss_cheese_analysis",
                 input_data=agent3_task_data,
-                temperature=1.0,
+                temperature=agent3_config["temperature"],
                 required_capabilities=[ModelCapability.DEEP_REASONING, ModelCapability.CREATIVE, ModelCapability.STRUCTURED_OUTPUT]
             )
 
@@ -139,8 +150,9 @@ class JHAOrchestrator:
             confidence = prediction_data.get("incidentPrediction", {}).get("confidence", "Unknown")
             print(f"✓ Predicted: {incident_name} (confidence: {confidence})")
 
-            # AGENT 4: Report Synthesis (Structured)
-            print("📄 Agent 4: Synthesizing final report...")
+            # AGENT 4: Report Synthesis (Temperature from DB)
+            agent4_config = agent_configs.get("agent4_synthesis", {"temperature": 0.5})
+            print(f"📄 Agent 4: Synthesizing final report... (T={agent4_config['temperature']})")
             agent4_task_data = {
                 "validation": validation_data,
                 "risk": risk_data,
@@ -152,7 +164,7 @@ class JHAOrchestrator:
             agent4_task = AgentTask(
                 task_type="report_synthesis",
                 input_data=agent4_task_data,
-                temperature=0.5,
+                temperature=agent4_config["temperature"],
                 required_capabilities=[ModelCapability.STRUCTURED_OUTPUT]
             )
 
