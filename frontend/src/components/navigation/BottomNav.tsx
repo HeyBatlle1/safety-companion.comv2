@@ -1,17 +1,18 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { 
-  House, 
-  MapPin, 
-  MessagesSquare, 
-  ClipboardList, 
+import {
+  House,
+  MapPin,
+  MessagesSquare,
+  ClipboardList,
   FileImage,
   History,
-  FileBarChart, 
-  BarChart3, 
-  UserCircle, 
+  FileBarChart,
+  BarChart3,
+  UserCircle,
   Users,
-  Bell
+  Bell,
+  Settings
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import supabase from '@/services/supabase';
@@ -75,6 +76,7 @@ const BottomNav = () => {
     { icon: History, label: 'History', path: '/history', testId: 'nav-history' },
     { icon: FileBarChart, label: 'Reports', path: '/reports', testId: 'nav-reports', hasNotification: hasNewReports },
     { icon: BarChart3, label: 'Analytics', path: '/analytics', testId: 'nav-analytics' },
+    { icon: Settings, label: 'Admin', path: '/admin/agent-settings', testId: 'nav-admin' },
     { icon: UserCircle, label: 'Profile', path: '/profile', testId: 'nav-profile' },
     { icon: Users, label: 'Team', path: '/profiles', testId: 'nav-team' },
   ];

@@ -8,14 +8,7 @@ import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Settings2, Shield, AlertTriangle } from 'lucide-react';
 import { AgentConfigDashboard } from '@/components/AgentSettings/AgentConfigDashboard';
-
-// Simple auth check - replace with actual auth when available
-const useAuth = () => {
-  return {
-    user: { role: 'admin' }, // Mock admin user for now
-    isLoading: false
-  };
-};
+import { useAuth } from '@/contexts/AuthContext';
 
 export const AgentSettingsPage: React.FC = () => {
   const { user, isLoading } = useAuth();
