@@ -42,7 +42,7 @@ class AgentConfigService:
                 )
             )
         )
-        configs = result.scalars().all()
+        configs = list(result.scalars())
 
         # Convert to dictionary with agent_name as key
         return {config.agent_name: config for config in configs}

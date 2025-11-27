@@ -52,7 +52,7 @@ async def get_agent_configurations(
         .where(AgentConfiguration.user_id == user_id)
         .order_by(AgentConfiguration.agent_name)
     )
-    configs = result.scalars().all()
+    configs = list(result.scalars())
 
     # If no configurations exist, create defaults
     if not configs:

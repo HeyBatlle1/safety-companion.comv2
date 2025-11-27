@@ -48,20 +48,17 @@ async def analyze_checklist(
     - OSHA compliance assessment
     """
     try:
-        # For testing: Direct orchestrator call without database
+        # Use real database now that V2 tables exist
         from app.core.deps import get_agent_registry
         registry = get_agent_registry()
 
-        # Create minimal orchestrator without database
+        # Create orchestrator with real database connection
         from app.agents.orchestrator import JHAOrchestrator
-        from unittest.mock import AsyncMock
-
-        mock_db = AsyncMock()
-        orchestrator = JHAOrchestrator(registry, mock_db)
+        orchestrator = JHAOrchestrator(registry, db)
 
         user_id = UUID("00000000-0000-0000-0000-000000000000")
 
-        # Call orchestrator directly, bypassing database persistence
+        # Call orchestrator with real database
         result = await orchestrator.execute_full_analysis(
             request=request,
             user_id=user_id

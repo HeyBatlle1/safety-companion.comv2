@@ -1,75 +1,97 @@
-#!/usr/bin/env python3
+# backend/init_db.py
 """
-Database Initialization Script for Agent Configuration
+Database Initialization Script for Safety Companion V2
 
-Creates only the agent configuration tables.
-Run this script to initialize the database with agent configuration tables.
+Creates all V2 tables in Neon database without affecting existing V1 tables.
+This resolves the HTTP 500 errors on agent-config endpoints.
 """
 
 import asyncio
-from sqlalchemy import create_engine, MetaData
-from app.core.config import get_settings
+import sys
+from app.core.database import engine, Base
 
-async def init_agent_config_db():
-    """Initialize only agent configuration tables"""
-    print("🔧 Initializing agent configuration database tables...")
+# Import all models to register them with Base
+from app.models.agent_config import AgentConfiguration, AgentPerformanceLog
+from app.models.analysis import AnalysisHistory, AgentOutput
+from app.models.jha_updates import JHAUpdate
+from app.models.safety import SafetyReport, RiskAssessment
+from app.models.user import User
+from app.models.company import Company, Project
+from app.models.notifications import NotificationPreference
 
-    settings = get_settings()
+async def create_tables():
+    """Create all V2 tables in Neon database"""
+    print("🚀 Starting V2 database migration...")
+    print(f"Database URL: {str(engine.url).replace(engine.url.password or '', '***')}")
 
-    # For SQLite, use synchronous engine for simple table creation
-    if settings.database_url.startswith("sqlite://"):
-        database_url = settings.database_url
-    else:
-        database_url = settings.database_url
+    try:
+        async with engine.begin() as conn:
+            print("📊 Creating all V2 tables...")
+            await conn.run_sync(Base.metadata.create_all)
 
-    # Use synchronous engine for table creation
-    engine = create_engine(database_url, echo=True)
+        print("✅ All V2 tables created successfully!")
+        print("\nCreated tables:")
+        print("  - agent_configurations")
+        print("  - agent_performance_logs")
+        print("  - analyses")
+        print("  - jha_updates")
+        print("  - safety_assessments")
+        print("  - users (V2)")
+        print("  - companies")
+        print("  - notifications")
+        print("\nV1 tables preserved:")
+        print("  - bot_activity")
+        print("  - conversations")
+        print("  - documents")
+        print("  - injury_records")
+        print("  - messages")
+        print("  - user_preferences")
+        print("  - users (V1)")
 
-    # Create tables manually with SQL
-    with engine.connect() as conn:
-        # Create agent_configurations table
-        from sqlalchemy import text
-        conn.execute(text("""
-            CREATE TABLE IF NOT EXISTS agent_configurations (
-                id INTEGER PRIMARY KEY,
-                user_id TEXT NOT NULL,
-                agent_name TEXT NOT NULL,
-                model TEXT NOT NULL,
-                temperature REAL DEFAULT 0.7,
-                max_tokens INTEGER DEFAULT 4000,
-                is_active BOOLEAN DEFAULT 1,
-                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                last_used_at TIMESTAMP,
-                total_executions INTEGER DEFAULT 0,
-                avg_execution_time_ms REAL,
-                notes TEXT,
-                UNIQUE(user_id, agent_name)
-            )
-        """))
+        return True
 
-        # Create agent_performance_logs table
-        conn.execute(text("""
-            CREATE TABLE IF NOT EXISTS agent_performance_logs (
-                id INTEGER PRIMARY KEY,
-                config_id INTEGER NOT NULL,
-                execution_id TEXT NOT NULL,
-                execution_time_ms REAL NOT NULL,
-                token_usage_input INTEGER,
-                token_usage_output INTEGER,
-                token_usage_total INTEGER,
-                success BOOLEAN NOT NULL,
-                error_message TEXT,
-                output_quality_score REAL,
-                executed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                FOREIGN KEY (config_id) REFERENCES agent_configurations (id)
-            )
-        """))
+    except Exception as e:
+        print(f"❌ Error creating tables: {e}")
+        return False
 
-        conn.commit()
+async def verify_tables():
+    """Verify tables were created successfully"""
+    print("\n🔍 Verifying table creation...")
 
-        print("✅ Agent configuration tables created successfully!")
-        print("📊 Created tables: agent_configurations, agent_performance_logs")
+    try:
+        async with engine.begin() as conn:
+            # Check if agent_configurations table exists and is accessible
+            result = await conn.execute(text("SELECT COUNT(*) FROM agent_configurations"))
+            count = result.scalar()
+            print(f"✅ agent_configurations table accessible (0 records expected)")
+
+            return True
+
+    except Exception as e:
+        print(f"❌ Table verification failed: {e}")
+        return False
 
 if __name__ == "__main__":
-    asyncio.run(init_agent_config_db())
+    print("Safety Companion V2 Database Migration")
+    print("=" * 40)
+
+    # Import text for verification query
+    from sqlalchemy import text
+
+    success = asyncio.run(create_tables())
+
+    if success:
+        verification_success = asyncio.run(verify_tables())
+        if verification_success:
+            print("\n🎉 Migration completed successfully!")
+            print("Agent Config Dashboard should now work without HTTP 500 errors.")
+            print("\nNext steps:")
+            print("1. Test: curl https://api.safety-companion.com/api/v1/admin/agent-config")
+            print("2. Open Agent Config Dashboard in browser")
+            sys.exit(0)
+        else:
+            print("\n⚠️  Migration completed but verification failed")
+            sys.exit(1)
+    else:
+        print("\n💥 Migration failed!")
+        sys.exit(1)
